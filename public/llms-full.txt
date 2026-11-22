@@ -1,0 +1,120 @@
+# Guess the Speed: Full Game Guide
+
+Guess the Speed is a family game-night app. Players privately guess download and upload speed, run a real speed test, and score points for the closest estimates. The game runs in a browser with no account. A round takes about two minutes, so it also works as a quick filler game between longer games.
+
+The home game, Classroom mode, and Work mode are available in Tamil at https://guessthespeed.com/ta/, https://guessthespeed.com/ta/classroom/, and https://guessthespeed.com/ta/work/. The same pages are available in Spanish at https://guessthespeed.com/es/, https://guessthespeed.com/es/classroom/, and https://guessthespeed.com/es/work/. Other guides and content pages are currently in English.
+
+## How to play
+
+1. Add each player with a name and role face.
+2. Pass the device around. Each player enters a download and upload guess in Mbps and locks it in.
+3. Start the test. The app measures unloaded latency, download speed, and upload speed using the Cloudflare speed test engine.
+4. Compare guesses, award points, and continue through the selected rounds.
+
+On a living-room screen, TV mode enlarges the gauge and game text on wide displays, including in room games. The champion screen can share the winner, podium, and latest speed-test result using the device’s share sheet or clipboard.
+
+## Scoring and worked example
+
+For each metric, miss is the absolute difference between the guess and actual result divided by the actual result. A missing metric counts as a 100 percent miss. The round miss is the average of download and upload miss. Misses are compared after rounding to four decimal places.
+
+For example, if the actual test is 100 Mbps download and 20 Mbps upload, a guess of 90 Mbps download and 18 Mbps upload misses each metric by 10 percent. The average miss is 10 percent.
+
+First place earns 3 points, second place earns 2, and third place earns 1. Only guesses with an average miss of 50 percent or less earn place points; players further off are skipped and the next closest player takes the place. Spot-on bonuses still apply. Places beyond third earn no place points. A guess within 5 percent of the actual result earns one spot-on bonus point for that metric. Players can earn two bonus points in a round.
+
+## Ties and rounds
+
+Share the points is the default tie rule. Players with equal misses get the points for their place, and the next place is skipped. For example, two players tied for first both earn 3 points, and the following player is third.
+
+The optional download tiebreak compares download miss, then upload miss. If the scores are still equal, the players share the place.
+
+Choose 1, 3, 5, 7, or 10 rounds, or choose endless mode. At the end, the champion screen ranks players by total points. Play again keeps the player roster and resets game scores.
+
+## Themes and automatic dates
+
+Theme options are Light, Dark, Halloween, Diwali, Thanksgiving, Winter, Christmas, New Year, Pongal, Valentine’s Day, Holi, Easter, Eid al-Fitr, Eid al-Adha, Lunar New Year, and St. Patrick’s Day. Auto mode uses the local calendar date and follows the device color preference when no festival theme is active.
+
+- Pongal: January 13 to 17.
+- Valentine’s Day: February 7 to 14.
+- St. Patrick’s Day: March 15 to 17.
+- New Year: December 27 to January 2.
+- Christmas: December 1 to 26.
+- Winter: January 3 to 31, except Pongal dates.
+- Halloween: October 15 to 31.
+- Thanksgiving: six days before through one day after the fourth Thursday of November.
+- Easter: six days before through one day after Western Easter Sunday.
+- Diwali: three days before through two days after the lookup date for 2026 to 2030.
+- Holi: three days before through one day after the lookup date for 2026 to 2030.
+- Eid al-Fitr: one day before through two days after its Umm al-Qura calendar estimate for 2026 to 2030.
+- Eid al-Adha: one day before through three days after its Umm al-Qura calendar estimate for 2026 to 2030.
+- Lunar New Year: two days before through five days after the lookup date for 2026 to 2030.
+
+When movable festival windows overlap, the theme whose festival date is closest wins. Ties are resolved in this order: Diwali, Holi, Easter, Eid al-Fitr, Eid al-Adha, then Lunar New Year. Movable festivals take priority over fixed themes. Fixed-theme priority is Thanksgiving, Pongal, Halloween, Valentine’s Day, St. Patrick’s Day, New Year, Christmas, then Winter. Diwali, Holi, both Eid themes, and Lunar New Year do not auto-trigger for years outside their 2026 to 2030 lookup tables. Eid dates can differ by a day where you live, so choose the theme manually if your Eid starts earlier or later.
+
+## Privacy
+
+For a local game, player names, guesses, settings, scores, and history are stored in local storage on the current device. Classroom Mode also keeps class rosters in that browser's local storage. It does not create a room or send student names to the server. Clearing site data deletes a roster; exporting a class file moves it to wherever the file is saved or shared. Multiplayer rooms temporarily share the game state on Cloudflare. There are no accounts or game cookies. The speed test sends measurements to Cloudflare, which collects aggregated, anonymous results to understand internet connection quality. Optional Cloudflare Web Analytics uses a cookieless beacon and only loads when the site owner configures its public token. A public play counter stores only aggregate totals for completed real rounds, games reaching the champion phase, locked guesses, and successful Dev mode test runs as a total only; it stores no IP addresses, device IDs, timestamps per event, names, guesses, or speeds.
+
+If you add your internet plan in Settings, it stays in this browser and is never sent to us.
+
+Share result uses your device's own share sheet or clipboard. Nothing is sent to us.
+
+Choose Dev in the Game / Dev switch at the top of the home screen to open the raw Cloudflare speed test diagnostics console. Add `?dev=1` to the home page URL to open it directly. IP addresses are masked on screen by default, omitted from JSON exports, and not saved in local storage.
+
+## Play on separate phones
+
+Create a room on the home page and share its six-letter room code or QR code. Each player joins on a separate phone, enters a private guess, and follows the shared live gauge and scores. Guesses remain hidden from other players until the result is ready. The host can assign the test to a player’s phone, so everyone else can watch that phone’s live gauge. The host can stop a test at any time.
+
+Room game data, including player names, face choices, guesses, and scores, is stored on Cloudflare and deleted after six hours without activity. Rooms require no accounts and use no cookies.
+
+## Pages
+
+- Home game: https://guessthespeed.com/
+- Our story: https://guessthespeed.com/story/
+- Live stats: https://guessthespeed.com/stats/ shows aggregate rounds, games, guesses, spot-on guesses, average download, closest misses, rounds by Family, Rooms, Work and Classroom, plus a separate total for successful Dev mode test runs.
+- Rules and FAQ: https://guessthespeed.com/how-to-play/
+- How it works: https://guessthespeed.com/how-it-works/
+- Internet speed 101: https://guessthespeed.com/internet-speed-101/
+- Good internet speed guide: https://guessthespeed.com/what-is-a-good-internet-speed/
+- Gaming internet speed guide: https://guessthespeed.com/internet-speed-for-gaming/
+- Upload vs Download Speed: https://guessthespeed.com/upload-vs-download-speed/
+- 2.4 GHz vs 5 GHz Wi-Fi: https://guessthespeed.com/2-4-ghz-vs-5-ghz-wifi/
+- Internet Speed for 4K Streaming: https://guessthespeed.com/internet-speed-for-4k-streaming/
+- Internet Speed for Working from Home: https://guessthespeed.com/internet-speed-for-working-from-home/
+- Why Is My Internet Slow When Someone Is Downloading?: https://guessthespeed.com/why-is-my-internet-slow-when-downloading/
+- Internet plan quick check: https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/
+- Household speed calculator: https://guessthespeed.com/how-much-internet-speed-do-i-need/
+- Mbps to MB/s converter and download-time calculator: https://guessthespeed.com/mbps-to-mbs/
+- Privacy: https://guessthespeed.com/privacy/
+
+## Guide page summaries
+
+How it works explains the real browser-based Cloudflare speed test, its ping, download, and upload measurements, the non-linear gauge, privacy, and how guesses become points.
+
+Internet speed 101 defines bits, bytes, Mbps, MB/s, download, upload, ping, and jitter. It includes sourced activity needs, Wi-Fi tips, a speed conversion table, and a glossary. Use the good internet speed guide for household download, upload, and ping planning, the household speed calculator to add overlapping activities, or the Mbps to MB/s converter to estimate transfer rates and download time.
+
+## Internet speed guides and calculators
+
+- [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/) explains sourced download, upload, streaming, video-call, Remote Play, and latency recommendations, with household starting ranges and advice for diagnosing a lower speed test.
+- Internet Speed for Working from Home (https://guessthespeed.com/internet-speed-for-working-from-home/): Microsoft recommends 4 Mbps download and 2.5 Mbps upload per endpoint for Teams video meetings, and 2.5 Mbps each way for meeting screen sharing (https://learn.microsoft.com/en-us/microsoftteams/prepare-network). The site's household calculator uses 3.8 Mbps download and 3 Mbps upload per HD call, adds 25% headroom and applies a 25/5 Mbps planning floor. Microsoft's VPN guidance explains that forced-tunnel Microsoft 365 traffic can saturate corporate VPN infrastructure (https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-vpn-split-tunnel). The guide covers simultaneous remote workers, background sync, screen sharing and practical testing. Guess the Speed tests the home line and Wi-Fi to a nearby Cloudflare server, not to a meeting service or employer; its Dev mode call tick checks 3 Mbps upload and does not certify service quality.
+- [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/) gives sourced download, upload and ping guidance for online multiplayer, PlayStation Remote Play (5 Mbps minimum, 15 Mbps recommended both ways), Xbox Cloud Gaming (10 Mbps mobile, 20 Mbps consoles and PCs) and GeForce NOW (15 to 45 Mbps by resolution, under 80 ms latency), plus game download times at common plan speeds.
+- 2.4 GHz vs 5 GHz Wi-Fi (https://guessthespeed.com/2-4-ghz-vs-5-ghz-wifi/): Use 5 GHz for streaming, gaming and video calls and keep 2.4 GHz for far rooms and devices that only support it. Microsoft says consumer Wi-Fi has three bands (2.4, 5 and 6 GHz); 2.4 GHz has better compatibility and goes through walls better but is more congested, 5 GHz generally gives faster throughput, and a strong 6 GHz connection gives the best performance close to the router but needs Wi-Fi 6E support on both ends (https://support.microsoft.com/en-us/windows/wi-fi-and-your-home-layout-e1ed42e7-a3c5-d1be-2abb-e8fad00ad32a). Apple recommends one network name for all bands, 20 MHz channel width on 2.4 GHz and Auto on 5 and 6 GHz (https://support.apple.com/en-us/102766), and notes Bluetooth shares the 2.4 GHz band (https://support.apple.com/en-us/102319). The FCC opened 1,200 MHz in the 6 GHz band to unlicensed use in April 2020 (https://www.fcc.gov/document/fcc-opens-6-ghz-band-wi-fi-and-other-unlicensed-uses), and the Wi-Fi Alliance says Wi-Fi 7 adds 320 MHz channels in 6 GHz with twice the throughput of Wi-Fi 6 (https://www.wi-fi.org/wi-fi-macphy). Sony, Microsoft and NVIDIA recommend 5 GHz Wi-Fi for Remote Play, Xbox Cloud Gaming and GeForce NOW. The page reuses the site's calculator rates and Dev mode thresholds and notes the site test measures to a nearby Cloudflare server, not to third-party services.
+- Upload vs Download Speed (https://guessthespeed.com/upload-vs-download-speed/): Download speed is how fast data arrives from the internet; upload speed is how fast a device sends data out, and many plans are asymmetric with far less upload. Microsoft recommends 2.5 Mbps up and 4 Mbps down per person for Teams video meetings (https://learn.microsoft.com/en-us/microsoftteams/prepare-network); PlayStation Remote Play needs 5 Mbps minimum and 15 Mbps recommended in both directions (https://www.playstation.com/en-us/support/games/ps4-remote-play-connection-troubleshooting/); YouTube lists 17 Mbps H.264 for 1080p at 60 fps and advises leaving about 20% of upload unused (https://support.google.com/youtube/answer/2853702, https://support.google.com/youtube/answer/2853856). The page uses the site's calculator figures (3 Mbps up for an HD group call, 25% headroom) and Dev mode thresholds (3 Mbps up for calls, 20 Mbps up for big uploads), and notes the site test measures to a nearby Cloudflare server, not to third-party services.
+- Internet Speed for 4K Streaming (https://guessthespeed.com/internet-speed-for-4k-streaming/): One 4K stream needs about 15 to 25 Mbps of steady download speed. Netflix recommends 15 Mbps or higher for Ultra HD 4K (https://help.netflix.com/en/node/306), YouTube recommends a sustained 20 Mbps for 4K UHD (https://support.google.com/youtube/answer/78358) and the FCC lists 25 Mbps for streaming Ultra HD 4K video (https://www.fcc.gov/consumers/guides/broadband-speed-guide). Netflix says 4K uses up to 7 GB per hour, per device (https://help.netflix.com/en/node/87), 4K needs the Premium plan (https://help.netflix.com/en/node/24926), and every device in the chain must support 4K (https://help.netflix.com/en/node/13444). The page uses the site's calculator figure of 20 Mbps per 4K stream with 25% headroom and the Dev mode 4K tick at 25 Mbps download, recommends testing at the TV, and notes the site test measures to a nearby Cloudflare server, not to the streaming service. No Disney+ figure is quoted because its help page could not be verified.
+- Why Is My Internet Slow When Someone Is Downloading? (https://guessthespeed.com/why-is-my-internet-slow-when-downloading/): A big download or upload fills the queue on a home connection, so small, time-sensitive packets from calls, games and web pages wait behind it: Mbps stays the same but round trip time rises. This is called loaded latency, often nicknamed bufferbloat. Cloudflare measures loaded latency with small requests sent during its download and upload tests and says an idle to loaded gap approaching 100 ms or more on a wired connection likely points to the ISP (https://blog.cloudflare.com/how-does-cloudflares-speed-test-really-work/). Microsoft Teams lists typical call values of round trip under 200 ms, jitter under 30 ms and packet loss under 2% (https://support.microsoft.com/en-us/teams/meetings/monitor-call-and-meeting-quality-in-microsoft-teams). Apple's Network Responsiveness test (networkQuality on macOS) reports Round-trips Per Minute and suggests routers with Smart Queue Management (https://support.apple.com/en-us/101942). Guess the Speed measures idle ping, jitter, download and upload to a nearby Cloudflare server and does not measure loaded latency or packet loss. Fixes: enable SQM if the router supports it, schedule big transfers, use Ethernet, avoid VPNs for calls, and upgrade only if the line is genuinely full.
+- [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/) compares a measured download result with a plan, offers a browser-only quick checker, and explains fair testing and when to discuss a repeated gap with a provider. Its percentage colors are Guess the Speed's own rule of thumb.
+- [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/) adds estimated download and upload rates for simultaneous 4K and HD streams, HD calls, game streaming, downloads, and connected devices, then adds 25% headroom and rounds to a common tier. Its active-download allowance is explicitly a planning assumption.
+- [Mbps to MB/s converter and download-time calculator](https://guessthespeed.com/mbps-to-mbs/) converts between Mbps, MB/s, and Gbps, and estimates decimal file download times at full rate and 90% efficiency.
+
+Our story explains how living-room speed tests, two kids who love guessing, and a dad who loses on purpose inspired a family game. Naveen built the site to keep guesses private, carry scores across rounds, and wrap a real speed test in game night. Read it at https://guessthespeed.com/story/.
+
+## Game and lesson pages
+
+- [Speed test game](https://guessthespeed.com/speed-test-game/) explains the family speed guessing game, its real browser test, scoring, room codes, and optional house rules.
+- [Team icebreaker](https://guessthespeed.com/work/) is a free five-minute remote meeting game with private guesses and a speed test that rotates between teammates' devices.
+- [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/) offers nine low-prep Wi-Fi activities, including room hunts, paper logs, download-time math, and a parents-versus-kids tournament.
+- [Classroom Mode](https://guessthespeed.com/classroom/) is a free, local-only teacher tool for managing class rosters, balanced teams, and Spotlight rounds on one shared device.
+- [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/) is a 30-minute activity for ages 8 to 14, with a lesson plan, percent-error example, worksheet, answer key, extensions, and classroom privacy notes.
+
+## Credits
+
+Made by NaveenKumar for game night with his kids. The site uses Cloudflare Speedtest, self-hosted Bricolage Grotesque and Figtree fonts, and Phosphor icons. More projects: [QAInsights](https://qainsights.com), [dosa.dev](https://dosa.dev), [ai.dosa.dev](https://ai.dosa.dev), [iamspeed.dev](https://iamspeed.dev). Support: [Buy me a coffee](https://buymeacoffee.com/qainsights). Code: [GitHub](https://github.com/QAInsights/guessthespeed).

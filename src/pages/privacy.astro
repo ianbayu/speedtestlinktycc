@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/site.css';
+---
+
+<Base title="Privacy | Guess the Speed" description="Learn what Guess the Speed stores on your device and how its real speed test works." breadcrumb="Privacy">
+  <main class="wrap content-page">
+    <span class="round-banner">A small privacy note</span>
+    <h1>Your local game stays on your device.</h1>
+    <p class="lede">There are no accounts to create. A single-device game is saved in this browser’s local storage. Multiplayer rooms share the game state on Cloudflare for the room’s lifetime.</p>
+    <article class="content-card stk">
+      <h2>What stays in local storage?</h2>
+      <p>Guess the Speed saves the game on the device you are using so the family can pick up where you left off. This data is not sent to our servers. You can clear it through your browser’s site data settings. Your last 10 speed test results are saved in this browser so the game can show how your Wi-Fi changes over time. They never leave your device, and Clear history removes them.</p>
+      <p>If you add your internet plan in Settings, it stays in this browser and is never sent to us.</p>
+      <p>Your chosen language preference is saved in this browser so game links can stay in that language.</p>
+
+      <h2>What is stored for multiplayer rooms?</h2>
+      <p>Room game data, including player names, face choices, guesses, and scores, is stored on Cloudflare so each device can share the same game. Rooms are deleted after six hours without activity. Rooms do not require accounts or use cookies.</p>
+      <p>In a team room, the measured speed of whoever runs that round's test is shown to everyone in the room.</p>
+
+      <h2>Sharing a result</h2>
+      <p>Share result uses your device's own share sheet or clipboard. Nothing is sent to us.</p>
+
+      <h2>What happens during a speed test?</h2>
+      <p>The real test sends download, upload, and latency requests to Cloudflare’s speed test service. Cloudflare collects aggregated, anonymous test results to learn about internet connection quality. Your game scores and player names are not included in those measurement results.</p>
+
+      <h2>What does developer mode show?</h2>
+      <p>Developer mode shows extra details about your connection, such as the Cloudflare data centre, your network (ASN) and your IP address, fetched from Cloudflare when you turn it on. These details are shown only on your screen. They are not stored, saved in exports, or sent anywhere else.</p>
+
+      <h2>Does the site use analytics?</h2>
+      <p>When the site owner configures Cloudflare Web Analytics, it uses a cookieless beacon to measure site visits. It is only included when its public beacon token is configured. The game itself does not set analytics cookies.</p>
+
+      <h2>Do you count how often the game is played?</h2>
+      <p>Yes, but only as running totals. When a round finishes, we add it to public totals: rounds, games finished, guesses, spot-on guesses, the average download speed across all rounds, the average of each round's closest miss, and whether it was a family, room, Work team or classroom game. Successful Dev mode test runs are counted separately as a total only, not included in rounds, games, guesses or averages. We keep only those totals, never a single round's speed, anyone's guess, a name, an IP address, a device ID or a cookie, so nothing can be traced back to a person or a family. See the <a href="/stats/">live stats</a>.</p>
+
+      <h2>Can children use the game?</h2>
+      <p>The game asks only for a player name chosen by your family. Please use first names or nicknames rather than personal details. No account or contact information is requested.</p>
+    </article>
+  </main>
+</Base>

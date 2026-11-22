@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import ArticleTools from '../components/ArticleTools.astro';
+import '../styles/site.css';
+
+const questions = [
+  {
+    question: 'How do you play Guess the Speed?',
+    answer: 'Add players, let everyone privately guess download and upload speed, then run the real speed test. The closest average guess scores the most points.',
+  },
+  {
+    question: 'How are points scored?',
+    answer: 'The round awards 3 points for first place, 2 for second, and 1 for third, but only to guesses with an average miss of 50 percent or less. Players can also earn one bonus point for each speed guess within 5 percent of the actual result.',
+  },
+  {
+    question: 'How are ties handled?',
+    answer: 'By default, tied players share the points and the next place is skipped. In settings, the closest download guess can break an equal-miss tie.',
+  },
+  {
+    question: 'Can we play on one phone?',
+    answer: 'Yes. Pass the phone around so each player can enter and lock a private guess. Guesses stay hidden on player cards until the test ends.',
+  },
+  {
+    question: 'Does the game use a real speed test?',
+    answer: 'Yes. It measures latency, download speed, and upload speed using the Cloudflare speed test engine.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: questions.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+};
+---
+
+<Base title="How to Play Guess the Speed" description="Learn the rules, scoring, tie options, rounds, and themes for Guess the Speed." breadcrumb="How to play">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
+  </Fragment>
+  <main class="wrap content-page">
+    <span class="round-banner">Game night rules</span>
+    <h1>How do you play Guess the Speed?</h1>
+    <p class="lede">Everyone makes a secret download and upload guess. Then a real speed test reveals the numbers. The closest guesses collect points.</p>
+    <ArticleTools path="/how-to-play/" />
+    <article class="content-card stk">
+      <h2>How does a round work?</h2>
+      <ol>
+        <li><strong>Add your players.</strong> Choose a name and a familiar role face. A new game starts with a sample family: Mom, Dad, Big Sis and Little One. Tap the pencil to rename them, remove them, or add your own players. Your changes stay on this device.</li>
+        <li><strong>Pass the phone.</strong> Each player enters a download and upload guess, then locks it in. Other player cards never show those numbers early.</li>
+        <li><strong>Run the real test.</strong> The game checks ping, download speed, and upload speed against Cloudflare’s network.</li>
+        <li><strong>Reveal and score.</strong> The game compares guesses to the result, awards points, then starts the next round.</li>
+      </ol>
+
+      <h2>How is the score calculated?</h2>
+      <p>Each speed miss is the absolute difference from the real result divided by that result. The download and upload misses are averaged. A missing one of the two guesses counts as a full miss for that speed.</p>
+      <p><strong>Example:</strong> The test measures 100 Mbps download and 20 Mbps upload. A guess of 90 and 18 is 10% off on download and 10% off on upload, for a 10% average miss. A more accurate average ranks higher.</p>
+      <p>The round gives 3 points to first place, 2 to second, and 1 to third. Place points only go to guesses that are 50% off or closer on average. If a guess misses by more, that player sits out the places for the round and the next closest player moves up, so playing solo still needs a decent guess to score. A guess within 5% earns one spot-on bonus point for that speed, so a player can earn up to two bonus points.</p>
+
+      <h2>What happens when guesses tie?</h2>
+      <p>The default setting shares the points. Two players tied for first both get 3 points, and the next player is third. You can switch to “Closest download breaks the tie” in settings. If their download misses also match, upload miss is the next tiebreak, then points are shared if they are still even.</p>
+
+      <h2>How many rounds can we play?</h2>
+      <p>Choose 1, 3, 5, 7, or 10 rounds, or keep playing in endless mode. After the final round, the champion screen shows the total score podium. Play again keeps the player list and starts everyone at zero. On the champion screen, choose Share result to share the winner, podium, and latest speed-test result using your device’s share sheet or clipboard.</p>
+
+      <h2>Use TV mode on a big screen</h2>
+      <p>Turn on TV mode with the TV button in the header for a bigger gauge and text on wide living-room screens. The preference is saved on that device, and TV mode also works in a room game. Playing with a keyboard or TV remote? Press Space or Enter (the OK button on most remotes) to start the test, N for the next round, and F for full screen in TV mode.</p>
+
+      <h2>Play on separate phones</h2>
+      <p>Choose <strong>Create a room</strong> on the home page, then share its six-letter code or QR code. Everyone opens the room on their own phone and joins with a name and face. Guesses stay hidden from the other players until the result is ready, and the shared room shows the live gauge and scores. The host can choose a player’s phone to run the test, while everyone else follows its live gauge. The host can stop the test at any time.</p>
+
+      <h2>How do themes work?</h2>
+      <p>Auto mode picks a family-friendly festival theme by local date. You can also choose a theme yourself, including Eid al-Fitr, Eid al-Adha, Lunar New Year, and St. Patrick’s Day. Eid dates follow the Umm al-Qura calendar estimate and can differ by a day where you live, so pick the theme yourself if your Eid starts earlier or later. Light and dark follow your device color preference when no festival is active. Sound can be muted in the header or settings.</p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq">
+        {questions.map(({ question, answer }) => (
+          <section>
+            <h3>{question}</h3>
+            <p>{answer}</p>
+          </section>
+        ))}
+      </div>
+      <p class="learn-more">
+        Learn more: <a href="/how-it-works/">How the speed test works</a> and{' '}
+        <a href="/internet-speed-101/">Internet speed 101</a>.
+      </p>
+    </article>
+  </main>
+</Base>

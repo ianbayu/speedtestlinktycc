@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://speedtest.linkty.cc/sitemap-index.xml

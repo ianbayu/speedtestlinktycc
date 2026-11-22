@@ -1,0 +1,54 @@
+import { isThemeMode, type GameSettings } from "../lib/game";
+import { isRecord } from "../lib/guards";
+
+export interface RoomLocalSettings {
+  themeMode: GameSettings["themeMode"];
+  sound: boolean;
+  music: boolean;
+  confetti: boolean;
+  animatedBorders: boolean;
+}
+
+const STORAGE_KEY = "gts:room-settings";
+
+export function readRoomLocalSettings(): RoomLocalSettings {
+  const defaults: RoomLocalSettings = {
+    themeMode: "auto",
+    sound: false,
+    music: false,
+    confetti: true,
+    animatedBorders: true,
+  };
+  try {
+    const saved: unknown = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) ?? "null",
+    );
+    if (!isRecord(saved)) return defaults;
+    return {
+      themeMode:
+        typeof saved.themeMode === "string" && isThemeMode(saved.themeMode)
+          ? saved.themeMode
+          : defaults.themeMode,
+      sound: typeof saved.sound === "boolean" ? saved.sound : defaults.sound,
+      music: typeof saved.music === "boolean" ? saved.music : defaults.music,
+      confetti:
+        typeof saved.confetti === "boolean"
+          ? saved.confetti
+          : defaults.confetti,
+      animatedBorders:
+        typeof saved.animatedBorders === "boolean"
+          ? saved.animatedBorders
+          : defaults.animatedBorders,
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+export function saveRoomLocalSettings(settings: RoomLocalSettings): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    return;
+  }
+}

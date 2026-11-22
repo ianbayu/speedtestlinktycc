@@ -1,0 +1,59 @@
+# Guess the Speed
+
+> A family game-night app where everyone guesses download and upload speed before a real internet speed test.
+
+## Key facts
+
+- The game is free and does not require accounts or use cookies.
+- A round takes about two minutes, so it also works as a quick filler game between board games, while dinner cooks, or before a movie.
+- It runs a real speed test in your browser against Cloudflare's network.
+- Play with one or more players on one screen; room-code games support up to 12 players.
+- Play together on one screen or use room codes on separate phones. The room server hides guesses from other players until the result is ready.
+- Classroom Mode lets teachers organize classes and teams on one shared device; student rosters stay in that browser.
+- Place scoring awards 3 points for first, 2 for second, and 1 for third. Each download or upload guess within 5% earns one spot-on bonus point, while place points require an average miss of 50% or less.
+- Room Race mode lets players lock in or change a guess during a test; timing multiplies accuracy points, and live speeds stay hidden until the result.
+- Single-device game data stays in that browser. Multiplayer rooms are deleted after six hours without activity.
+- Optional internet plan comparisons stay in this browser and are never sent to us.
+
+## Pages
+
+- [Play Guess the Speed](https://guessthespeed.com/)
+- [Guess the Speed in Tamil](https://guessthespeed.com/ta/)
+- [Guess the Speed in Spanish](https://guessthespeed.com/es/)
+- [Classroom mode in Tamil](https://guessthespeed.com/ta/classroom/)
+- [Classroom mode in Spanish](https://guessthespeed.com/es/classroom/)
+- [Work mode in Tamil](https://guessthespeed.com/ta/work/)
+- [Work mode in Spanish](https://guessthespeed.com/es/work/)
+- [Our story](https://guessthespeed.com/story/)
+- [Live stats](https://guessthespeed.com/stats/) shows aggregate totals for rounds, games, guesses, spot-on guesses, average download, closest misses, and play modes.
+- [How to play](https://guessthespeed.com/how-to-play/)
+- [How it works](https://guessthespeed.com/how-it-works/)
+- [Internet speed 101](https://guessthespeed.com/internet-speed-101/)
+- [What is a good internet speed?](https://guessthespeed.com/what-is-a-good-internet-speed/)
+- [Speed School](https://guessthespeed.com/speed-school/): searchable index of every guide, tool and game night article
+- [2.4 GHz vs 5 GHz Wi-Fi](https://guessthespeed.com/2-4-ghz-vs-5-ghz-wifi/): sourced Microsoft, Apple, Wi-Fi Alliance and FCC guidance on Wi-Fi bands, range vs speed, 6 GHz and Wi-Fi 7, which devices belong on each band and how to test them.
+- [Internet Speed for 4K Streaming](https://guessthespeed.com/internet-speed-for-4k-streaming/): sourced Netflix, YouTube and FCC 4K speed figures, Mbps for several 4K TVs, 4K data use per hour and why 4K drops to HD.
+- [Internet Speed for Working from Home](https://guessthespeed.com/internet-speed-for-working-from-home/): sourced Teams call requirements, simultaneous-call upload budgets, VPN routing and home-office checks.
+- [Why Is My Internet Slow When Someone Is Downloading?](https://guessthespeed.com/why-is-my-internet-slow-when-downloading/): loaded latency and bufferbloat explained, with home tests (Cloudflare, Apple networkQuality, ping) and fixes.
+- [How much internet speed do you need for gaming?](https://guessthespeed.com/internet-speed-for-gaming/)
+- [Upload vs Download Speed](https://guessthespeed.com/upload-vs-download-speed/): What upload and download speed mean, which home activities use each, and how much upload video calls, live streams and Remote Play need.
+- [Am I getting the internet speed I pay for?](https://guessthespeed.com/am-i-getting-the-speed-i-pay-for/)
+- [Household speed calculator](https://guessthespeed.com/how-much-internet-speed-do-i-need/)
+- [Mbps to MB/s converter and download time](https://guessthespeed.com/mbps-to-mbs/)
+- [Speed test game](https://guessthespeed.com/speed-test-game/)
+- [Team icebreaker](https://guessthespeed.com/work/) is a free five-minute remote meeting game where teammates guess speed before the test rotates between their devices.
+- [Family game night ideas](https://guessthespeed.com/family-game-night-ideas/)
+- [Classroom Mode](https://guessthespeed.com/classroom/)
+- [Internet speed lesson for kids](https://guessthespeed.com/internet-speed-lesson-for-kids/)
+- [Privacy](https://guessthespeed.com/privacy/)
+- [Full game guide](https://guessthespeed.com/llms-full.txt)
+
+## Speed School articles by topic
+
+<!-- speed-school-articles -->
+
+RSS feed: https://guessthespeed.com/speed-school/rss.xml
+
+## Markdown versions
+
+Every Speed School article is also available as clean Markdown at the same URL with `.md` instead of the trailing slash, for example https://guessthespeed.com/internet-speed-for-gaming.md. The full list is at https://guessthespeed.com/speed-school/.

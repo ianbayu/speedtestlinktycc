@@ -1,0 +1,861 @@
+import { loadGame, saveGame, type GameSettings } from "../lib/game";
+import { readRoomLocalSettings, saveRoomLocalSettings } from "./room-settings";
+import { isThemeId, themes, themeForDate, type ThemeId } from "../lib/themes";
+import { playCue, unlockAudio } from "../lib/sound";
+import type { RoomView } from "../lib/room";
+import { loadSession } from "../lib/classroom";
+import { loadPlan, savePlan, type InternetPlan } from "../lib/plan";
+import { describeTarget, isOverlayOpen, shortcutAction } from "./shortcuts";
+import { modeSwitchHidden, urlWithoutDevParam } from "./mode-ui";
+import { $ } from "./dom";
+import { initializeClientLocale, t } from "../lib/messages";
+
+const locale = initializeClientLocale();
+const themePicker = $<HTMLDivElement>("[data-theme-picker]");
+const themeTrigger = $<HTMLButtonElement>("[data-theme-trigger]");
+const themeMenu = $<HTMLDivElement>("[data-theme-menu]");
+const themeList = $<HTMLDivElement>("[data-theme-list]");
+const themeLabel = $<HTMLSpanElement>("[data-theme-label]");
+const themeAutoHint = $<HTMLElement>("[data-theme-auto-hint]");
+const themeOptions = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-theme-option]"),
+];
+const soundButton = $<HTMLButtonElement>("[data-sound-toggle]");
+const soundOn = $<HTMLSpanElement>("[data-sound-on]");
+const soundOff = $<HTMLSpanElement>("[data-sound-off]");
+const tvButton = $<HTMLButtonElement>("[data-tv-toggle]");
+const settingsTVToggle = $<HTMLButtonElement>("[data-settings-tv-toggle]");
+const fullscreenButton = $<HTMLButtonElement>("[data-fullscreen]");
+const languageTrigger = document.querySelector<HTMLButtonElement>(
+  "[data-language-trigger]",
+);
+const languageMenu = document.querySelector<HTMLElement>(
+  "[data-language-menu]",
+);
+const languageOptions = Array.from(
+  document.querySelectorAll<HTMLAnchorElement>("[data-language-option]"),
+);
+const languageTriggerCompactQuery = window.matchMedia("(max-width: 640px)");
+function syncLanguageTriggerLabel() {
+  if (!languageTrigger) return;
+  const visibleLabel = languageTrigger.querySelector<HTMLElement>(
+    languageTriggerCompactQuery.matches ? ".language-code" : ".language-name",
+  );
+  const prefix = visibleLabel?.textContent?.trim();
+  if (prefix)
+    languageTrigger.setAttribute(
+      "aria-label",
+      `${prefix}, ${t("language_picker_aria", {}, locale)}`,
+    );
+}
+syncLanguageTriggerLabel();
+languageTriggerCompactQuery.addEventListener(
+  "change",
+  syncLanguageTriggerLabel,
+);
+const localeHint = document.querySelector<HTMLElement>("[data-locale-hint]");
+const localeHintDismiss = document.querySelector<HTMLButtonElement>(
+  "[data-dismiss-locale-hint]",
+);
+const settingsButton = $<HTMLButtonElement>("[data-open-settings]");
+const settingsDialog = $<HTMLDialogElement>("[data-settings-dialog]");
+const closeSettingsButton = $<HTMLButtonElement>("[data-close-settings]");
+const settingsForm = $<HTMLFormElement>("[data-settings-form]");
+const modeSwitch = document.querySelector<HTMLElement>("[data-mode-switch]");
+const teamRoomButton = document.querySelector<HTMLButtonElement>(
+  "[data-create-team-room]",
+);
+const teamRoomJoinForm = document.querySelector<HTMLFormElement>(
+  "[data-work-join-form]",
+);
+const teamRoomClassroomNote = document.querySelector<HTMLElement>(
+  "[data-work-classroom-note]",
+);
+const modeOptions = Array.from(
+  modeSwitch?.querySelectorAll<HTMLElement>("[data-mode-option]") ?? [],
+);
+const fxLayer = $<HTMLDivElement>("[data-fx-layer]");
+const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduceMotion = reduceMotionQuery.matches;
+reduceMotionQuery.addEventListener("change", (event) => {
+  reduceMotion = event.matches;
+});
+
+const roomMode = document.documentElement.dataset.room === "1";
+let classroomMode = loadSession() !== null;
+const initialGame = roomMode ? null : loadGame();
+let roomHost = false;
+let settings: GameSettings = roomMode
+  ? {
+      rounds: 3,
+      tieMode: "share",
+      ...readRoomLocalSettings(),
+    }
+  : initialGame!.settings;
+let testing = initialGame?.phase === "testing";
+let devMode =
+  !roomMode && !classroomMode && document.documentElement.dataset.dev === "1";
+let tvMode = document.documentElement.dataset.tv === "1";
+let activeTheme: ThemeId = "light";
+const homePage = document.documentElement.dataset.home === "1";
+type WakeLockSentinelLike = {
+  release(): Promise<void>;
+  addEventListener?(
+    type: "release",
+    listener: () => void,
+    options?: AddEventListenerOptions,
+  ): void;
+};
+type WakeLockApi = {
+  request(type: "screen"): Promise<WakeLockSentinelLike>;
+};
+let screenWakeLock: WakeLockSentinelLike | null = null;
+let wakeLockRequest = 0;
+let cursorHideTimer = 0;
+const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+const tvLayoutQuery = window.matchMedia("(min-width: 900px)");
+const routePathname =
+  window.location.pathname.replace(/^\/(?:ta|es)(?=\/)/u, "") || "/";
+const classroomPage = routePathname === "/classroom/";
+const workPage = routePathname === "/work/";
+if (homePage || classroomPage || workPage) {
+  try {
+    localStorage.setItem("gts:locale", locale);
+  } catch {}
+}
+
+function syncLocaleHint() {
+  if (!localeHint) return;
+  const dismissed = (() => {
+    try {
+      return localStorage.getItem("gts:locale-hint-dismissed") === "1";
+    } catch {
+      return false;
+    }
+  })();
+  const preferred = navigator.languages
+    .map((language) => language.toLowerCase().split("-")[0])
+    .find((language) => language === "ta" || language === "es");
+  const hidden =
+    !homePage ||
+    locale !== "en" ||
+    dismissed ||
+    !preferred ||
+    tvMode ||
+    devMode ||
+    testing ||
+    new URLSearchParams(location.search).has("test");
+  localeHint.hidden = hidden;
+  localeHint
+    .querySelectorAll<HTMLElement>("[data-locale-hint-copy]")
+    .forEach((copy) => {
+      copy.hidden = hidden || copy.dataset.localeHintCopy !== preferred;
+    });
+}
+
+function closeLanguageMenu(returnFocus = false) {
+  if (!languageMenu || !languageTrigger || languageMenu.hidden) return;
+  languageMenu.hidden = true;
+  languageTrigger.setAttribute("aria-expanded", "false");
+  if (returnFocus) languageTrigger.focus();
+}
+
+function openLanguageMenu() {
+  if (!languageMenu || !languageTrigger) return;
+  languageMenu.hidden = false;
+  languageTrigger.setAttribute("aria-expanded", "true");
+  const selected = languageOptions.find(
+    (option) => option.getAttribute("aria-selected") === "true",
+  );
+  (selected ?? languageOptions[0])?.focus();
+}
+
+function syncAudioUnlock() {
+  if (settings.sound) {
+    document.addEventListener("pointerdown", unlockAudio, { once: true });
+    document.addEventListener("keydown", unlockAudio, { once: true });
+  } else {
+    document.removeEventListener("pointerdown", unlockAudio);
+    document.removeEventListener("keydown", unlockAudio);
+  }
+}
+
+function syncModeSwitch() {
+  if (modeSwitch) {
+    classroomMode = loadSession() !== null;
+    modeSwitch.hidden = modeSwitchHidden({
+      roomMode,
+      tvMode,
+      tvLayout: tvLayoutQuery.matches,
+      devMode,
+    });
+    const selectedMode = classroomMode
+      ? "classroom"
+      : devMode
+        ? "dev"
+        : homePage
+          ? "game"
+          : workPage
+            ? "work"
+            : classroomPage
+              ? "classroom"
+              : "";
+    modeOptions.forEach((option) => {
+      const optionMode = option.dataset.modeOption;
+      const selected = !classroomMode && optionMode === selectedMode;
+      const blockedByClassroom = classroomMode && optionMode !== "classroom";
+      option.classList.toggle("is-disabled", blockedByClassroom);
+      if (blockedByClassroom) {
+        option.setAttribute("aria-disabled", "true");
+        option.setAttribute("title", t("classroom_end_to_switch", {}, locale));
+      } else {
+        option.removeAttribute("aria-disabled");
+        option.removeAttribute("title");
+      }
+      if (option instanceof HTMLButtonElement)
+        option.setAttribute("aria-pressed", String(selected));
+      if (selectedMode === optionMode && !(option instanceof HTMLButtonElement))
+        option.setAttribute("aria-current", "page");
+      else option.removeAttribute("aria-current");
+    });
+  }
+  if (teamRoomButton) {
+    teamRoomButton.disabled = classroomMode;
+    teamRoomJoinForm
+      ?.querySelectorAll<HTMLInputElement | HTMLButtonElement>("input, button")
+      .forEach((control) => {
+        control.disabled = classroomMode;
+      });
+    if (teamRoomClassroomNote) teamRoomClassroomNote.hidden = !classroomMode;
+  }
+}
+
+tvLayoutQuery.addEventListener("change", syncModeSwitch);
+modeSwitch?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const option = target.closest<HTMLElement>("[data-mode-option]");
+  if (classroomMode && option?.dataset.modeOption !== "classroom") {
+    event.preventDefault();
+    return;
+  }
+  if (
+    devMode &&
+    (option?.dataset.modeOption === "classroom" ||
+      option?.dataset.modeOption === "work")
+  )
+    setDevMode(false);
+});
+
+function setDevMode(enabled: boolean) {
+  if (roomMode || classroomMode) return;
+  devMode = enabled;
+  if (enabled) document.documentElement.dataset.dev = "1";
+  else delete document.documentElement.dataset.dev;
+  syncModeSwitch();
+  try {
+    localStorage.setItem("gts:dev", enabled ? "1" : "0");
+  } catch {}
+  const updatedUrl = urlWithoutDevParam(location.href);
+  if (updatedUrl !== null) history.replaceState(history.state, "", updatedUrl);
+  document.dispatchEvent(
+    new CustomEvent<boolean>("gts:dev-change", { detail: enabled }),
+  );
+}
+
+function syncFullscreenControl() {
+  fullscreenButton.hidden = !tvMode || !homePage || !document.fullscreenEnabled;
+  const active = Boolean(document.fullscreenElement);
+  fullscreenButton.setAttribute("aria-pressed", String(active));
+  fullscreenButton.setAttribute(
+    "aria-label",
+    active
+      ? t("header_fullscreen_exit", {}, locale)
+      : t("header_fullscreen", {}, locale),
+  );
+  fullscreenButton.title = active
+    ? t("header_fullscreen_exit", {}, locale)
+    : t("header_fullscreen", {}, locale);
+}
+
+function syncTVControls() {
+  tvButton.setAttribute("aria-pressed", String(tvMode));
+  settingsTVToggle.setAttribute("aria-checked", String(tvMode));
+  syncFullscreenControl();
+}
+
+function releaseScreenWakeLock() {
+  wakeLockRequest += 1;
+  const current = screenWakeLock;
+  screenWakeLock = null;
+  if (current) void current.release().catch(() => {});
+}
+
+async function acquireScreenWakeLock() {
+  if (!tvMode || !homePage) {
+    releaseScreenWakeLock();
+    return;
+  }
+  if (screenWakeLock) return;
+  const requestId = ++wakeLockRequest;
+  try {
+    const wakeLock = (navigator as Navigator & { wakeLock?: WakeLockApi })
+      .wakeLock;
+    const current = await wakeLock?.request("screen");
+    if (!current) return;
+    if (requestId !== wakeLockRequest || !tvMode || !homePage) {
+      await current.release().catch(() => {});
+      return;
+    }
+    screenWakeLock = current;
+    current.addEventListener?.("release", () => {
+      if (screenWakeLock === current) screenWakeLock = null;
+    });
+  } catch {}
+}
+
+function showCursorAndScheduleHide() {
+  window.clearTimeout(cursorHideTimer);
+  if (document.body.classList.contains("tv-cursor-hidden"))
+    document.body.classList.remove("tv-cursor-hidden");
+  if (!tvMode || !homePage || coarsePointer) return;
+  cursorHideTimer = window.setTimeout(() => {
+    document.body.classList.add("tv-cursor-hidden");
+  }, 3000);
+}
+
+function setTVMode(enabled: boolean) {
+  tvMode = enabled;
+  document.documentElement.dataset.tv = enabled ? "1" : "0";
+  try {
+    localStorage.setItem("gts:tv", enabled ? "1" : "0");
+  } catch {}
+  syncTVControls();
+  document.dispatchEvent(
+    new CustomEvent<boolean>("gts:tv-change", { detail: enabled }),
+  );
+  if (enabled) {
+    void acquireScreenWakeLock();
+    showCursorAndScheduleHide();
+  } else {
+    releaseScreenWakeLock();
+    window.clearTimeout(cursorHideTimer);
+    document.body.classList.remove("tv-cursor-hidden");
+    if (document.fullscreenElement)
+      void document.exitFullscreen().catch(() => {});
+  }
+}
+
+async function toggleFullscreen() {
+  if (!tvMode || !homePage || !document.fullscreenEnabled) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch {}
+  syncFullscreenControl();
+}
+
+function getResolvedTheme(mode: GameSettings["themeMode"]): ThemeId {
+  if (mode !== "auto") return mode;
+  const festival = themeForDate(new Date());
+  if (festival) return festival;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function applyTheme(mode: GameSettings["themeMode"]) {
+  activeTheme = getResolvedTheme(mode);
+  document.documentElement.dataset.theme = activeTheme;
+  const resolvedDate = new Date();
+  const day = `${resolvedDate.getFullYear()}-${String(
+    resolvedDate.getMonth() + 1,
+  ).padStart(2, "0")}-${String(resolvedDate.getDate()).padStart(2, "0")}`;
+  try {
+    localStorage.setItem(
+      "gts:theme-resolved",
+      JSON.stringify({
+        mode,
+        theme: activeTheme,
+        day,
+        dark: window.matchMedia("(prefers-color-scheme: dark)").matches,
+      }),
+    );
+  } catch {}
+  const metaTheme = document.querySelector(
+    'meta[name="theme-color"]',
+  ) as HTMLMetaElement;
+  const computed = getComputedStyle(document.documentElement)
+    .getPropertyValue("--bg")
+    .trim();
+  metaTheme.content = computed || "#eceff3";
+  fxLayer.replaceChildren();
+
+  const fx = themes[activeTheme].fx;
+  if (!fx || reduceMotion) return;
+  for (let index = 0; index < 14; index += 1) {
+    const piece = document.createElement("span");
+    piece.textContent = fx[index % fx.length];
+    piece.style.left = `${(Math.random() * 100).toFixed(1)}vw`;
+    piece.style.fontSize = `${(14 + Math.random() * 18).toFixed(0)}px`;
+    piece.style.animationDuration = `${(9 + Math.random() * 10).toFixed(1)}s`;
+    piece.style.animationDelay = `${(-Math.random() * 18).toFixed(1)}s`;
+    piece.style.setProperty(
+      "--drift",
+      `${(Math.random() * 80 - 40).toFixed(0)}px`,
+    );
+    fxLayer.append(piece);
+  }
+}
+
+function syncThemePicker() {
+  const mode = settings.themeMode;
+  themeOptions.forEach((option) => {
+    const selected = option.dataset.themeOption === mode;
+    option.setAttribute("aria-selected", String(selected));
+    option.tabIndex = selected ? 0 : -1;
+    if (option.dataset.themeOption === "auto")
+      option.dataset.theme = activeTheme;
+  });
+  themeLabel.textContent =
+    mode === "auto"
+      ? t("header_theme_auto", {}, locale)
+      : t(`theme_${mode}` as Parameters<typeof t>[0], {}, locale);
+  themeAutoHint.textContent = t(
+    "header_theme_now",
+    { theme: t(`theme_${activeTheme}` as Parameters<typeof t>[0], {}, locale) },
+    locale,
+  );
+  themeTrigger.disabled = testing;
+  if (testing) closeThemeMenu(false);
+}
+
+function focusThemeOption(option: HTMLButtonElement) {
+  themeOptions.forEach((candidate) => {
+    candidate.tabIndex = candidate === option ? 0 : -1;
+  });
+  option.focus();
+  option.scrollIntoView({ block: "nearest" });
+}
+
+function openThemeMenu(target: "selected" | "last" = "selected") {
+  if (themeTrigger.disabled) return;
+  themeMenu.hidden = false;
+  themeTrigger.setAttribute("aria-expanded", "true");
+  const selected =
+    themeOptions.find(
+      (option) => option.getAttribute("aria-selected") === "true",
+    ) ?? themeOptions[0];
+  focusThemeOption(target === "last" ? themeOptions.at(-1)! : selected);
+}
+
+function closeThemeMenu(returnFocus = true) {
+  if (themeMenu.hidden) return;
+  themeMenu.hidden = true;
+  themeTrigger.setAttribute("aria-expanded", "false");
+  if (returnFocus) themeTrigger.focus();
+}
+
+function syncControls() {
+  syncThemePicker();
+  syncTVControls();
+  soundButton.disabled = testing;
+  settingsButton.disabled = testing;
+  const roundsControl = settingsForm.elements.namedItem(
+    "rounds",
+  ) as HTMLSelectElement;
+  const tieControl = settingsForm.elements.namedItem(
+    "tieMode",
+  ) as HTMLSelectElement;
+  roundsControl.disabled = roomMode && (!roomHost || testing);
+  tieControl.disabled = roomMode && (!roomHost || testing);
+  $<HTMLElement>("[data-room-settings-note]").hidden = !roomMode || roomHost;
+  (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked = settings.animatedBorders;
+  soundButton.setAttribute("aria-pressed", String(settings.sound));
+  soundButton.setAttribute(
+    "aria-label",
+    `${t("header_sound_label", {}, locale)}, ${
+      settings.sound
+        ? t("header_sound_off", {}, locale)
+        : t("header_sound_on", {}, locale)
+    }`,
+  );
+  soundOn.hidden = !settings.sound;
+  soundOff.hidden = settings.sound;
+  syncLocaleHint();
+}
+
+function saveSettings(patch: Partial<GameSettings>, playSound = false) {
+  if (roomMode) {
+    settings = { ...settings, ...patch };
+    saveRoomLocalSettings({
+      themeMode: settings.themeMode,
+      sound: settings.sound,
+      music: settings.music,
+      confetti: settings.confetti,
+      animatedBorders: settings.animatedBorders,
+    });
+  } else {
+    const currentGame = loadGame();
+    settings = { ...currentGame.settings, ...patch };
+    saveGame({ ...currentGame, settings });
+  }
+  applyTheme(settings.themeMode);
+  document.documentElement.dataset.aurora = settings.animatedBorders
+    ? "1"
+    : "0";
+  syncAudioUnlock();
+  syncControls();
+  document.dispatchEvent(
+    new CustomEvent<GameSettings>("gts:settings-change", { detail: settings }),
+  );
+  if (playSound) playCue("lockIn", activeTheme, settings.sound);
+}
+
+function linkSoundAndMusic(event: Event) {
+  const sound = settingsForm.elements.namedItem("sound") as HTMLInputElement;
+  const music = settingsForm.elements.namedItem("music") as HTMLInputElement;
+  if (event.target === music && music.checked) sound.checked = true;
+  if (event.target === sound && !sound.checked) music.checked = false;
+  if (event.target === sound || event.target === music)
+    saveSettings({ sound: sound.checked, music: music.checked });
+}
+
+function fillSettingsForm() {
+  if (!roomMode) settings = loadGame().settings;
+  applyTheme(settings.themeMode);
+  syncControls();
+  const plan = loadPlan();
+  (settingsForm.elements.namedItem("planDown") as HTMLInputElement).value =
+    plan.down === null ? "" : String(plan.down);
+  (settingsForm.elements.namedItem("planUp") as HTMLInputElement).value =
+    plan.up === null ? "" : String(plan.up);
+  (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
+    String(settings.rounds);
+  (settingsForm.elements.namedItem("tieMode") as HTMLSelectElement).value =
+    settings.tieMode;
+  (settingsForm.elements.namedItem("themeMode") as HTMLSelectElement).value =
+    settings.themeMode;
+  (settingsForm.elements.namedItem("sound") as HTMLInputElement).checked =
+    settings.sound;
+  (settingsForm.elements.namedItem("music") as HTMLInputElement).checked =
+    settings.sound && settings.music;
+  (settingsForm.elements.namedItem("confetti") as HTMLInputElement).checked =
+    settings.confetti;
+  (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked = settings.animatedBorders;
+}
+
+themeTrigger.addEventListener("click", () => {
+  if (themeMenu.hidden) openThemeMenu();
+  else closeThemeMenu();
+});
+
+themeTrigger.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+  event.preventDefault();
+  openThemeMenu(event.key === "ArrowUp" ? "last" : "selected");
+});
+
+languageTrigger?.addEventListener("click", () => {
+  if (languageMenu?.hidden) openLanguageMenu();
+  else closeLanguageMenu();
+});
+languageMenu?.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeLanguageMenu(true);
+    return;
+  }
+  if (event.key === "Tab") {
+    closeLanguageMenu(false);
+    return;
+  }
+  const index = languageOptions.indexOf(
+    document.activeElement as HTMLAnchorElement,
+  );
+  const steps: Record<string, number> = { ArrowDown: 1, ArrowUp: -1 };
+  let next: number | null = null;
+  if (event.key in steps) next = index < 0 ? 0 : index + steps[event.key];
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = languageOptions.length - 1;
+  if (next === null || languageOptions.length === 0) return;
+  event.preventDefault();
+  languageOptions[
+    Math.min(Math.max(next, 0), languageOptions.length - 1)
+  ]?.focus();
+});
+document.addEventListener("pointerdown", (event) => {
+  if (
+    languageMenu &&
+    !languageMenu.hidden &&
+    !event
+      .composedPath()
+      .some(
+        (target) =>
+          target instanceof Node &&
+          (target === languageMenu ||
+            target === languageTrigger ||
+            languageMenu.contains(target)),
+      )
+  )
+    closeLanguageMenu(false);
+});
+localeHintDismiss?.addEventListener("click", () => {
+  try {
+    localStorage.setItem("gts:locale-hint-dismissed", "1");
+  } catch {
+    // Keep the hint dismissible for this page view when storage is unavailable.
+  }
+  syncLocaleHint();
+});
+
+themeOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    const mode = option.dataset.themeOption ?? "auto";
+    saveSettings({ themeMode: isThemeId(mode) ? mode : "auto" }, true);
+    closeThemeMenu();
+  });
+});
+
+themeMenu.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeThemeMenu();
+    return;
+  }
+  if (event.key === "Tab") {
+    closeThemeMenu(false);
+    return;
+  }
+  const index = themeOptions.indexOf(
+    document.activeElement as HTMLButtonElement,
+  );
+  const columns =
+    event.key === "ArrowDown" || event.key === "ArrowUp"
+      ? getComputedStyle(themeList)
+          .gridTemplateColumns.split(" ")
+          .filter(Boolean).length
+      : 1;
+  const steps: Record<string, number> = {
+    ArrowRight: 1,
+    ArrowLeft: -1,
+    ArrowDown: columns,
+    ArrowUp: -columns,
+  };
+  let next: number | null = null;
+  if (event.key in steps) next = index < 0 ? 0 : index + steps[event.key];
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = themeOptions.length - 1;
+  if (next === null) return;
+  event.preventDefault();
+  focusThemeOption(
+    themeOptions[Math.min(Math.max(next, 0), themeOptions.length - 1)],
+  );
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (!themeMenu.hidden && !themePicker.contains(event.target as Node))
+    closeThemeMenu(false);
+});
+
+settingsForm.addEventListener("change", linkSoundAndMusic);
+
+soundButton.addEventListener("click", () => {
+  saveSettings({ sound: !settings.sound }, true);
+});
+
+tvButton.addEventListener("click", () => setTVMode(!tvMode));
+settingsTVToggle.addEventListener("click", () => setTVMode(!tvMode));
+fullscreenButton.addEventListener("click", () => {
+  void toggleFullscreen();
+});
+document.addEventListener("keydown", (event) => {
+  const action = shortcutAction({
+    key: event.key,
+    ctrlKey: event.ctrlKey,
+    metaKey: event.metaKey,
+    altKey: event.altKey,
+    repeat: event.repeat,
+    target: describeTarget(event.target),
+    overlayOpen: isOverlayOpen(document),
+  });
+  if (action === "fullscreen") void toggleFullscreen();
+});
+document.addEventListener("fullscreenchange", syncFullscreenControl);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void acquireScreenWakeLock();
+});
+window.addEventListener("mousemove", showCursorAndScheduleHide);
+
+settingsButton.addEventListener("click", () => {
+  fillSettingsForm();
+  settingsDialog.showModal();
+});
+
+closeSettingsButton.addEventListener("click", () => settingsDialog.close());
+
+let settingsPressedOutside = false;
+settingsDialog.addEventListener("pointerdown", (event) => {
+  settingsPressedOutside = event.target === settingsDialog;
+});
+settingsDialog.addEventListener("click", (event) => {
+  if (settingsPressedOutside && event.target === settingsDialog)
+    settingsDialog.close();
+  settingsPressedOutside = false;
+});
+
+modeOptions.forEach((option) => {
+  option.addEventListener("click", (event) => {
+    const optionMode = option.dataset.modeOption;
+    if (classroomMode && optionMode !== "classroom") {
+      event.preventDefault();
+      return;
+    }
+    if (option instanceof HTMLButtonElement) setDevMode(optionMode === "dev");
+  });
+});
+
+document.addEventListener("gts:dev-change", (event) => {
+  devMode = (event as CustomEvent<boolean>).detail;
+  syncModeSwitch();
+  syncLocaleHint();
+});
+
+document.addEventListener("gts:tv-change", () => {
+  syncModeSwitch();
+  syncLocaleHint();
+});
+document.addEventListener("gts:classroom-change", syncModeSwitch);
+
+settingsForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const planDownValue = (
+    settingsForm.elements.namedItem("planDown") as HTMLInputElement
+  ).value;
+  const planUpValue = (
+    settingsForm.elements.namedItem("planUp") as HTMLInputElement
+  ).value;
+  const parsePlanInput = (value: string): number | null => {
+    if (!value.trim()) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 1 && parsed <= 10000
+      ? parsed
+      : null;
+  };
+  const plan: InternetPlan = {
+    down: parsePlanInput(planDownValue),
+    up: parsePlanInput(planUpValue),
+  };
+  const roundsValue = (
+    settingsForm.elements.namedItem("rounds") as HTMLSelectElement
+  ).value;
+  const currentSettings = roomMode ? settings : loadGame().settings;
+  const rounds: GameSettings["rounds"] =
+    roundsValue === "endless"
+      ? "endless"
+      : [1, 3, 5, 7, 10].includes(Number(roundsValue))
+        ? Number(roundsValue)
+        : currentSettings.rounds;
+  const tieModeValue = (
+    settingsForm.elements.namedItem("tieMode") as HTMLSelectElement
+  ).value;
+  const themeModeValue = (
+    settingsForm.elements.namedItem("themeMode") as HTMLSelectElement
+  ).value;
+  const tieMode = tieModeValue === "download" ? "download" : "share";
+  const themeMode =
+    themeModeValue === "auto"
+      ? "auto"
+      : isThemeId(themeModeValue)
+        ? themeModeValue
+        : currentSettings.themeMode;
+  const sound = (settingsForm.elements.namedItem("sound") as HTMLInputElement)
+    .checked;
+  const music = (settingsForm.elements.namedItem("music") as HTMLInputElement)
+    .checked;
+  const confetti = (
+    settingsForm.elements.namedItem("confetti") as HTMLInputElement
+  ).checked;
+  const animatedBorders = (
+    settingsForm.elements.namedItem("animatedBorders") as HTMLInputElement
+  ).checked;
+  if (roomMode) {
+    if (roomHost)
+      document.dispatchEvent(
+        new CustomEvent("gts:room-settings-change", {
+          detail: { rounds, tieMode },
+        }),
+      );
+    saveSettings({ themeMode, sound, music, confetti, animatedBorders });
+  } else {
+    saveSettings({
+      rounds,
+      tieMode,
+      themeMode,
+      sound,
+      music,
+      confetti,
+      animatedBorders,
+    });
+  }
+  savePlan(plan);
+  document.dispatchEvent(
+    new CustomEvent<InternetPlan>("gts:plan-change", { detail: plan }),
+  );
+  settingsDialog.close();
+});
+
+document.addEventListener("gts:testing-change", (event) => {
+  testing = (event as CustomEvent<boolean>).detail;
+  syncControls();
+  syncLocaleHint();
+});
+
+document.addEventListener("gts:room-state", (event) => {
+  if (!roomMode) return;
+  const view = (event as CustomEvent<RoomView>).detail;
+  roomHost = view.isHost;
+  settings = {
+    ...settings,
+    rounds: view.settings.rounds,
+    tieMode: view.settings.tieMode,
+  };
+  (settingsForm.elements.namedItem("rounds") as HTMLSelectElement).value =
+    String(settings.rounds);
+  (settingsForm.elements.namedItem("tieMode") as HTMLSelectElement).value =
+    settings.tieMode;
+  syncControls();
+});
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", () => {
+    if (settings.themeMode !== "auto") return;
+    applyTheme(settings.themeMode);
+    syncThemePicker();
+    document.dispatchEvent(
+      new CustomEvent<GameSettings>("gts:settings-change", {
+        detail: settings,
+      }),
+    );
+  });
+
+applyTheme(settings.themeMode);
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.documentElement.dataset.themeReady = "1";
+  });
+});
+syncAudioUnlock();
+syncModeSwitch();
+syncControls();
+syncLocaleHint();
+document.documentElement.dataset.aurora = settings.animatedBorders ? "1" : "0";
+if (tvMode) {
+  void acquireScreenWakeLock();
+  showCursorAndScheduleHide();
+}
